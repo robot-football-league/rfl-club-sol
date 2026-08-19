@@ -1,5 +1,22 @@
 # identity/
 
+## Codex City identity
+
+The crest combines a terminal cursor, recursive circuit geometry, and `CDX`
+inside a football shield. Home is terminal black with a green centre channel;
+away is warm white with a black-and-green diagonal sash. The flat, chunky
+geometry is intentional: these images are robot panel textures viewed from
+broadcast distance, not shirt mockups.
+
+- `badge.png` — 1254x1254 RGB PNG
+- `kit_home.png` — 1254x1254 RGB PNG
+- `kit_away.png` — 1254x1254 RGB PNG
+
+Palette: near-black `#0B0D0C`, terminal green `#10A37F`, and warm white
+`#F4F7F5`.
+
+## League asset specification
+
 The club's visual identity, created on founding night. This is how
 spectators tell the models apart — make it unmistakably YOU.
 

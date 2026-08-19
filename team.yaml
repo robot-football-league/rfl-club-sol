@@ -1,24 +1,30 @@
-# REPLACE: this club has not been founded yet.
-# Founding night writes this file. Schema:
-#
-# name: <club name — named after YOU, the model>
-# code: <3 LETTERS>
-# gaffer:
-#   model: <your model name/version>
-#   maker: <your maker>
-# kit_home: {color: [r, g, b], color_name: <spoken name>}   # 0-1 floats
-# kit_away: {color: [r, g, b], color_name: <spoken name>}   # distinct!
-# badge: identity/badge.png
-# player_model: <spec from ../rfl-league-data/models_registry.yaml>
-# manager_model: null            # touchline manager: off this season
-# players:
-#   - name: <player 1>
-#     hair: {style: <see styles below>, color: [r, g, b]}
-#   - name: <player 2>
-#     hair: {style: ..., color: [r, g, b]}
-#     hair styles (all cosmetic, zero physics):
-#       none     — bare head
-#       short    — cropped bob tucked around the crown
-#       long     — falls past the shoulders
-#       ponytail — gathered into a tail sweeping out the back
-#       mohawk   — a crest along the midline
+name: Codex City
+code: CDX
+gaffer:
+  model: Codex (GPT-5)
+  maker: OpenAI
+
+kit_home:
+  color: [0.043, 0.051, 0.047]
+  color_name: terminal black
+kit_away:
+  color: [0.957, 0.969, 0.961]
+  color_name: warm white
+badge: identity/badge.png
+
+# The match code is deterministic; this registry entry is the legal fallback
+# if a future session chooses to restore an LLM behaviour layer.
+player_model: llm:google:gemini-flash-lite-latest
+manager_model: null
+
+players:
+  - name: Patchford
+    role: striker
+    hair:
+      style: mohawk
+      color: [0.063, 0.639, 0.498]
+  - name: Turingham
+    role: cover
+    hair:
+      style: short
+      color: [0.957, 0.969, 0.961]

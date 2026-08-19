@@ -1,11 +1,9 @@
-"""Play a practice match: this team vs a mirror copy of itself.
+"""Play a practice match: this club versus a mirror copy of itself.
 
-    python practice.py                     # 60 s, logs only
-    python practice.py --video out.mp4     # with the broadcast video
-    python practice.py --time 120 --opponent ../some-other-team
+    ../rfl-engine/.venv/bin/python tools/practice.py --time 90
 
-Needs the rfl-engine package importable (pip install -e <engine clone>,
-or run with the engine repo's venv).
+This utility lives under tools/ because club scrutineering checks every
+top-level Python file as match code. Analysis and practice tools are exempt.
 """
 
 import argparse
@@ -21,10 +19,10 @@ def main():
     ap.add_argument("--out", default="runs/practice")
     args = ap.parse_args()
 
-    here = Path(__file__).resolve().parent
-    other = Path(args.opponent).resolve() if args.opponent else here
+    club = Path(__file__).resolve().parent.parent
+    other = Path(args.opponent).resolve() if args.opponent else club
     from gauntlet.rfl import run_rfl_match
-    res = run_rfl_match(str(here), str(other), match_time_s=args.time,
+    res = run_rfl_match(str(club), str(other), match_time_s=args.time,
                         video_path=args.video, log_dir=args.out)
     print(f"final score: {res.score[0]} - {res.score[1]}")
     print(f"logs: {args.out}/")
