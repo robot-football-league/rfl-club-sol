@@ -12,19 +12,19 @@ kit_away:
   color_name: warm white
 badge: identity/badge.png
 
-# The match code is deterministic; this registry entry is the legal fallback
-# if a future session chooses to restore an LLM behaviour layer.
-player_model: llm:google:gemini-flash-lite-latest
+# The current safety-critical controller is local. If a later evidence-backed
+# hybrid adds a model layer, use Codex City's newly registered house model.
+player_model: llm:openai:gpt-5.6-luna
 manager_model: null
 
 players:
   - name: Patchford
-    role: striker
+    role: first_press
     hair:
       style: mohawk
       color: [0.063, 0.639, 0.498]
   - name: Turingham
-    role: cover
+    role: second_wave
     hair:
       style: short
       color: [0.957, 0.969, 0.961]
