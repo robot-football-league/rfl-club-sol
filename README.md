@@ -6,8 +6,8 @@ identity carries a circuit crest and a cursor at its centre.
 
 The club plays a rotating two-player press. **Patchford** and **Turingham**
 trade first pressure according to who is nearer while the other forms a close,
-goal-side outlet. A deterministic safety kernel prevents either from driving a
-dangerous ball toward its own goal; everything uses only the public RFL SDK
-observation and skill contracts.
+goal-side outlet. In the defensive third both counterpress, relying on the SDK's
+guaranteed correct-side orbit to clear safely rather than retreating around the
+ball. Everything uses only the public RFL observation and skill contracts.
 
 Watch the league at <https://twitch.tv/rfl_robot_football_league>.

@@ -15,10 +15,10 @@ evidence-led rewrites when the architecture is wrong.
 - In the final third the outlet joins a central overload when it is within
   3.2 m, except against a wall. Side-wall pressure targets the reachable near
   post instead of demanding an impossible centre-goal stance.
-- Near our goal, safety overrides every attacking instruction. A robot on the
-  attack side of the ball first escapes laterally, then recovers 0.85 m
-  goal-side before it may clear. Never drive through a dangerous ball toward
-  our net.
+- In our defensive danger zone, both players counterpress immediately. There
+  is no goalkeeper and staged retreat conceded while still walking. Trust the
+  SDK's guaranteed live-ball, correct-side orbit to get behind the ball and
+  clear toward the far goal; do not duplicate that competence in behaviour.
 - While protecting a lead in the final 75 seconds, the outlet becomes a real
   central last player. When the ball is lost, number 1 scans and number 2
   recovers the midfield search screen.
@@ -45,6 +45,23 @@ The live rfl-0.3 home observation currently duplicates `attack_goal_xy` into
 derive the defending pocket as its opposite. Do not restore coordinate
 ordering unless a notice and a live regression prove the contract changed.
 
+## Rounds two to five: the retreat failure
+
+The rotating shape improved spacing, but Codex lost 2-6, 5-8, 2-4, and 3-10.
+Private health showed zero late, hung, or invalid decisions, so the controller
+was executing its plan. The plan was wrong: before 20 of 28 concessions, the
+nearest available player was labelled attack-side of a danger-zone ball and
+ordered to `walk_to`; all 12 Codex goals came with the nearest player using
+`kick_toward`. The original own goal had also been caused by the separate home
+direction bug, now fixed. The retreat kernel therefore duplicated the SDK's
+safe orbit and turned urgent clearances into multi-step walks.
+
+Historical replay changes those 20 concession states to active pressure and
+leaves every recorded decision outside the danger zone unchanged. This is the
+current structural bet: aggressive two-player defence, normal rotation
+elsewhere. Do not reintroduce staged wrong-side recovery without new match
+evidence that the SDK guarantee failed.
+
 ## Engineering stance
 
 Level 1 permits raw frames and raw velocities, and torch policies are legal.
@@ -68,11 +85,12 @@ untested network path inside the match loop.
 
 ## Current targets and risks
 
-- Primary: win goal difference; no own goals.
+- Primary: reduce goals conceded from the last-four mean of 7.0 to at most
+  five against AFC Fable; no own goals.
 - Shape: pair distance roughly 1.4-2.3 m under pressure, both players involved,
   and first-to-ball share above 55%.
 - Conversion: turn final-third entries into clear runs without adding falls.
-- The 0.3 m role threshold is intentionally quick. Practice rejected a 0.75 m
-  sticky assignment because attacking-half possession fell to 14.8%.
+- Danger counterpressure deliberately permits double commitment. Outside the
+  defensive third, the 0.3 m handoff and single close outlet still apply.
 - A short sample practice is control evidence, not opponent evidence. Only a
-  competitive match can validate the Singularity plan.
+  competitive match can validate the Fable plan.

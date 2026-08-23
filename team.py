@@ -1,20 +1,21 @@
-"""Codex City: rotating pressure with a deterministic safety kernel.
+"""Codex City: rotating attack, two-player counterpress in danger.
 
-Round 1 showed that permanent striker/cover roles stretched the side to 5.21 m
-average separation in the second half and left one robot defending alone. Both
-players now run the same perception-bound controller: nearest player presses,
-the other forms a close goal-side outlet, and roles rotate with the ball.
+Across four losses, 20 of 28 concessions arrived while the nearest available
+Codex player was ordered to walk around a ball in our defensive third. Every
+one of our 12 goals came from active ``kick_toward`` pressure. The retreat
+kernel was solving an own goal whose actual cause was a since-fixed direction
+bug, while duplicating a correct-side orbit already guaranteed by the SDK.
 
-The final layer is non-negotiable. A player on the attack side of a ball near
-its own goal may not drive through it. It first moves laterally, then recovers
-goal-side. This directly addresses the 573 s Round 1 own goal.
+Both players now counterpress whenever the ball enters the defensive danger
+zone. ``kick_toward`` tracks the live ball and approaches from the correct
+side; outside danger, the nearer player presses and the other stays a close,
+goal-side outlet.
 """
 
 
 PITCH_X = 7.0
 PITCH_Y = 4.5
 GOAL_TARGET_Y = 1.08
-GOAL_SIDE_OFFSET = 0.85
 SUPPORT_TRAIL = 1.45
 SUPPORT_WIDTH = 1.05
 OWN_DANGER_DEPTH = 3.1
@@ -35,7 +36,7 @@ class CodexPlayer:
     def __init__(self, index):
         self.index = index
         self.slot = index % 2
-        self.name = "codex-city-rotating-press"
+        self.name = "codex-city-danger-counterpress"
         self.begin_episode()
 
     def begin_episode(self, log_dir=None):
@@ -110,39 +111,6 @@ class CodexPlayer:
             _clamp(by + vy * horizon, -PITCH_Y + 0.45, PITCH_Y - 0.45),
         )
 
-    def _wrong_side_danger(self, px, bx, attack_sign, own_depth):
-        return own_depth < OWN_DANGER_DEPTH and attack_sign * (px - bx) > 0.12
-
-    def _recover_goal_side(self, obs, ball, attack_sign):
-        """Two-stage route around a dangerous ball, never through it."""
-        px, py = (float(v) for v in obs["self"]["field_xy"])
-        bx, by = (float(v) for v in ball["field_xy"])
-        lateral = py - by
-        if abs(lateral) < 0.95:
-            if abs(by) > 0.3:
-                side = -1.0 if by > 0.0 else 1.0  # escape toward centre
-            else:
-                side = 1.0 if self.slot == 0 else -1.0
-            target = [px, _clamp(by + side * 1.35,
-                                 -PITCH_Y + 0.55, PITCH_Y - 0.55)]
-            return self._announce(
-                {"skill": "walk_to", "target": target},
-                "safety_lateral",
-                "Wrong side of danger; taking the lateral route.",
-            )
-
-        side = 1.0 if lateral > 0.0 else -1.0
-        target = [
-            _clamp(bx - attack_sign * GOAL_SIDE_OFFSET,
-                   -PITCH_X + 0.25, PITCH_X - 0.25),
-            _clamp(by + side * 0.62, -PITCH_Y + 0.5, PITCH_Y - 0.5),
-        ]
-        return self._announce(
-            {"skill": "walk_to", "target": target},
-            "safety_recover",
-            "Routing goal-side before any clearance.",
-        )
-
     def _break_scrum(self, obs, ball, attack_sign):
         px, py = (float(v) for v in obs["self"]["field_xy"])
         _, by = (float(v) for v in ball["field_xy"])
@@ -160,12 +128,8 @@ class CodexPlayer:
             "Releasing the collision; rotate onto the loose ball.",
         )
 
-    def _press(self, obs, ball, opponents, attack_x, defend_x, attack_sign):
-        px, _ = (float(v) for v in obs["self"]["field_xy"])
-        bx, _ = (float(v) for v in ball["field_xy"])
-        own_depth = attack_sign * (bx - defend_x)
-        if self._wrong_side_danger(px, bx, attack_sign, own_depth):
-            return self._recover_goal_side(obs, ball, attack_sign)
+    def _press(self, obs, ball, opponents, attack_x, attack_sign,
+               emergency=False):
         if obs["self"].get("blocked"):
             return self._break_scrum(obs, ball, attack_sign)
 
@@ -183,9 +147,13 @@ class CodexPlayer:
         lead = 0.8 if speed > 0.65 else (0.45 if speed > 0.35 else 0.0)
         return self._announce(
             {"skill": "kick_toward", "target": target, "lead_s": lead},
-            "wall_press" if wall else "first_press",
-            ("First pressure on the wall; hold the central outlet."
-             if wall else "First pressure; rotate into the goal-side outlet."),
+            ("counterpress" if emergency
+             else ("wall_press" if wall else "first_press")),
+            ("Danger: both players counterpress; clear through the far goal."
+             if emergency
+             else ("First pressure on the wall; hold the central outlet."
+                   if wall
+                   else "First pressure; rotate into the goal-side outlet.")),
         )
 
     def _support(self, obs, ball, attack_x, defend_x, attack_sign,
@@ -193,8 +161,6 @@ class CodexPlayer:
         px, py = (float(v) for v in obs["self"]["field_xy"])
         bx, by = (float(v) for v in ball["field_xy"])
         own_depth = attack_sign * (bx - defend_x)
-        if self._wrong_side_danger(px, bx, attack_sign, own_depth):
-            return self._recover_goal_side(obs, ball, attack_sign)
         if obs["self"].get("blocked"):
             return self._break_scrum(obs, ball, attack_sign)
 
@@ -295,9 +261,17 @@ class CodexPlayer:
         leading = int(score.get("you", 0)) > int(score.get("them", 0))
         leading_late = leading and float(obs.get("time_remaining_s", 999.0)) <= 75.0
 
+        # No goalkeeper exists. In four losses, staged goal-side recovery was
+        # still walking at 20 of 28 concessions. The SDK already guarantees a
+        # live, correct-side orbit, so danger means immediate pressure from
+        # both players—even if the teammate is temporarily out of view.
+        own_depth = attack_sign * (bx - defend_x)
+        if own_depth < OWN_DANGER_DEPTH:
+            return self._press(obs, ball, opponents, attack_x, attack_sign,
+                               emergency=True)
+
         if self._is_primary(ball, teammates, progress):
-            return self._press(obs, ball, opponents, attack_x,
-                               defend_x, attack_sign)
+            return self._press(obs, ball, opponents, attack_x, attack_sign)
         return self._support(obs, ball, attack_x, defend_x, attack_sign,
                              progress, leading_late)
 

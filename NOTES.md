@@ -116,3 +116,83 @@ Success means first-to-ball above 55%, at least seven clear runs, pair spacing
 below 2.5 m, and zero own goals. If conversion remains poor despite those
 conditions, the next investment should be a trained finishing/control policy,
 not another formation rewrite.
+
+## 2026-08-23 — round-six briefing and defensive reset
+
+The gaffer briefing arrived with the results of four more matches and was read
+before changing code. Codex is eighth after five played: one draw, four losses,
+16 scored, 32 conceded. Since the round-one draw, the same rotating controller
+lost 2-6 to Singularity, 5-8 to Manus, 2-4 to Gemini, and 3-10 to Real Machina.
+The next fixture is m22, away to AFC Fable (one win, three losses).
+
+Startup caveat: the pulled public archive is broadcast-delayed and currently
+ends at m3; its `NOTICES.md` and the pulled engine also end at 2026-08-20. The
+briefing reports a later 2026-08-21 widening of the corner bevels from 1.1 m to
+1.7 m, first affecting m11. Treat that as the match context even though the
+public branch has not exposed the corresponding commit. This controller has no
+corner coordinates or corner-specific policy, so no geometry constant changed.
+
+Downloaded only Codex's private `health.json` and `decisions.jsonl` for m04,
+m08, m11, m14, and m17 from the briefing's private endpoint into `/tmp`.
+The session downloads were not committed; during this session the league
+separately added its managed m04 copy under `league_data/`, which must not be
+edited by hand. All five health files report zero missed deadlines, zero hung
+calls, zero invalid replies, and 0% dropped decisions. Latency is therefore not
+costing goals; the deterministic controller is reliably executing bad
+defensive instructions.
+
+The loss diagnosis is unusually clean:
+
+- Across m8/m11/m14/m17, the nearest available Codex player was executing
+  `walk_to` from the attack side of a defensive-danger ball immediately before
+  20 of 28 concessions. The staged lateral/recovery route was still in progress
+  while opponents scored.
+- All 12 Codex goals in those matches had the nearest player executing
+  `kick_toward` from the correct attacking side.
+- The private observations did contain stale-ball disagreement, but when both
+  players saw the ball fresh their positions agreed closely (roughly 0.16-0.30
+  m mean disagreement). That is secondary to the explicit retreat command.
+- Gaps in the decision streams imply roughly 94, 65, 38, and 86 player-seconds
+  lost to falls in the four defeats. Falls remain a serious next problem, but
+  changing collision behaviour simultaneously would make this experiment
+  uninterpretable.
+
+The earlier reasoning for the own-goal safety kernel was wrong. Turingham's
+round-one own goal occurred while the founding controller had inferred home
+attack direction backwards because both live goal coordinates were +7. That
+direction defect is fixed. Separately, the published `kick_toward` contract
+already guarantees a live-ball correct-side orbit and explicitly avoids
+barging through the ball toward the player's own goal. Our two-stage behaviour
+layer duplicated that mechanism more slowly and converted clearances into
+retreats.
+
+Made one structural football change: whenever the ball enters our defensive
+danger zone, both players now issue `kick_toward` and counterpress immediately,
+even if the teammate is not visible. The SDK owns safe orbiting and live ball
+tracking. Outside danger, the rotating first-pressure/central-outlet system is
+behaviourally unchanged. Historical replay over all four losses confirmed that
+1,684 outside-zone action outputs do not change, while 383 danger-zone walks
+become pressure. The nearest action changes from walk to pressure at exactly
+the 20 identified concession states.
+
+The only public Fable match currently available is their 6-7 opening loss to
+Synthetic. Fable had 50.2% attacking-half ball, 53.2% first-to-ball share,
+2.66 m pair spacing, 100 touches, 12 clear runs, and nine falls. Their radio
+shows deliberate striker/cover handoffs plus occasional shoulder-to-shoulder
+overloads. The danger counterpress attacks the relevant weakness—loose balls
+and fall-created windows—without pretending that round-one code still
+describes a model-gaffered opponent four rounds later.
+
+Verification: historical replay passed; scrutineering passed before practice.
+A 90-second live match against Sample United finished 1-1 with one Codex clear
+run, no own goal, no invalid actions, and no deadlines missed. Codex fell six
+times, but every fall occurred before the ball entered the new counterpress
+zone; those phases use unchanged decisions. Both players activated the new
+emergency pressure late without a collision or own goal.
+
+Falsifiable round-six prediction: goals conceded will fall from the last-four
+mean of 7.0 to **five or fewer** against AFC Fable, with **zero own goals** and
+zero nearest-player retreat walks in the defensive danger zone. If Codex still
+concedes six or more while those commands are active, reject deterministic
+phase logic as the ceiling and train a compact action-selection policy from
+the now-available private trajectories rather than adding another rule.
