@@ -7,23 +7,24 @@ evidence-led rewrites when the architecture is wrong.
 
 ## Football contract
 
-- Both players are interchangeable. The nearer robot applies first pressure;
-  the other rotates 1.45 m behind the predicted ball into a central, goal-side
-  outlet. A 0.3 m tie band gives number 1 the deterministic claim.
-- Close spacing is aggression, not a scrum instruction. The outlet stays out
-  of wall pins; a blocked player disengages diagonally before re-entering.
-- In the final third the outlet joins a central overload when it is within
-  3.2 m, except against a wall. Side-wall pressure targets the reachable near
-  post instead of demanding an impossible centre-goal stance.
-- In our defensive danger zone, both players counterpress immediately. There
-  is no goalkeeper and staged retreat conceded while still walking. Trust the
-  SDK's guaranteed live-ball, correct-side orbit to get behind the ball and
-  clear toward the far goal; do not duplicate that competence in behaviour.
-- While protecting a lead in the final 75 seconds, the outlet becomes a real
-  central last player. When the ball is lost, number 1 scans and number 2
-  recovers the midfield search screen.
-- Radio is public output, not debug logging. Announce intent changes at most;
-  never narrate every decision.
+- Every visible-ball decision starts with a learned choice among PRESS,
+  SUPPORT, and SCREEN. The selector is a 19-8-3 tanh network trained on public
+  successful frozen-club trajectories, including masked teammate/opponent,
+  stale-camera, and blocked-player variants. Do not restore nearest-player or
+  danger-phase role rules unless competitive evidence beats the policy.
+- PRESS delegates live tracking, the correct-side orbit, and the kick to the
+  audited SDK skill. It remains the high-value action: every Codex goal against
+  Fable arrived from pressure.
+- SUPPORT executes the close central outlet, final-third overload, wall outlet,
+  and late lead-protection targets. SCREEN takes the direct ball-goal channel;
+  its x target must remain between the predicted ball and our own goal, even
+  when the ball is already inside the normal 0.72 m recovery point.
+- Close spacing is aggression, not a scrum instruction. Stale or blocked
+  defensive observations were the decisive Fable failure states, so the
+  learned selector normally screens rather than asking both robots to kick.
+- When the ball is lost, number 1 scans and number 2 recovers the midfield
+  search screen. Radio is public output, not debug logging: announce intent
+  changes at most, never every decision.
 
 ## Round-one evidence
 
@@ -56,20 +57,39 @@ ordered to `walk_to`; all 12 Codex goals came with the nearest player using
 direction bug, now fixed. The retreat kernel therefore duplicated the SDK's
 safe orbit and turned urgent clearances into multi-step walks.
 
-Historical replay changes those 20 concession states to active pressure and
-leaves every recorded decision outside the danger zone unchanged. This is the
-current structural bet: aggressive two-player defence, normal rotation
-elsewhere. Do not reintroduce staged wrong-side recovery without new match
-evidence that the SDK guarantee failed.
+Historical replay changed those 20 concession states to active pressure and
+left every recorded decision outside the danger zone unchanged. That was a
+clean experiment, but Fable still scored six: five concessions occurred while
+counterpressure was active, often with a stale or absent teammate view. The
+experiment therefore falsified unconditional two-player pressure as the
+current answer. Do not reintroduce it by another phase-rule variation.
+
+## Round six: the deterministic ceiling
+
+The 4-6 loss to AFC Fable crossed the predeclared abandonment line. Health was
+clean across 581 applied decisions (zero deadline, hung, invalid, or dropped
+replies), so execution was not the escape hatch. Private replay showed four
+Codex goals preserved by fresh PRESS states, but concessions clustered around
+stale disagreement, one-player availability, and both-player blocking.
+
+The current structural bet is learned role selection with deterministic skill
+execution. Training uses 67,518 augmented samples from successful public
+frozen-club performances and holds out 19,920 samples by whole fixture. The
+frozen network scores 77.1% held-out accuracy: PRESS recall 90.8%, SUPPORT
+67.7%, SCREEN 67.7%. On the Fable trace, all four scoring presses survive;
+four of five active-pressure concession contexts instead assign a goal-side
+screen. The training recipe and frozen-weight check live in
+`tools/train_role_policy.py`.
 
 ## Engineering stance
 
 Level 1 permits raw frames and raw velocities, and torch policies are legal.
-Use them when they solve a measured perception or control bottleneck. Round
-one exposed role geometry and own-goal routing instead: detections were fresh,
-all actions valid, and behaviour latency zero. Keep the safety kernel local.
-The declared `gpt-5.6-luna` is Codex City's house-model fallback; do not put an
-untested network path inside the match loop.
+Use them when they solve a measured perception or control bottleneck. The role
+network is inlined as rounded constants and evaluated with stdlib `math`, so
+match startup has no torch, file, or sibling-import dependency. Keep audited
+movement and own-goal safety in the local skill executors. The declared
+`gpt-5.6-luna` remains Codex City's house-model fallback; do not put an
+untested remote path inside the match loop.
 
 ## Nightly iteration loop
 
@@ -85,12 +105,14 @@ untested network path inside the match loop.
 
 ## Current targets and risks
 
-- Primary: reduce goals conceded from the last-four mean of 7.0 to at most
-  five against AFC Fable; no own goals.
-- Shape: pair distance roughly 1.4-2.3 m under pressure, both players involved,
-  and first-to-ball share above 55%.
-- Conversion: turn final-third entries into clear runs without adding falls.
-- Danger counterpressure deliberately permits double commitment. Outside the
-  defensive third, the 0.3 m handoff and single close outlet still apply.
-- A short sample practice is control evidence, not opponent evidence. Only a
-  competitive match can validate the Fable plan.
+- Primary: beat Synthetic Athletic by at least one goal in m27—Codex's first
+  league win—and concede at most four.
+- Exploit Synthetic's separation: its public pair distance expanded from 1.89
+  m in its opener to 4.60, 5.01, and 4.20 m across three defeats. Win the loose
+  central space before the isolated secondary player can recover.
+- The selector is imitation, not an outcome value function. If Codex does not
+  win m27, abandon these inferred role labels and train directly against
+  self-play match reward rather than tuning class weights or adding phase rules.
+- A 90-second sample practice produced two clear runs, two goals, 59.3%
+  first-to-ball share, and zero Codex falls, but surrendered a 2-0 lead to lose
+  2-3. It clears execution and collision risk; it does not validate defending.

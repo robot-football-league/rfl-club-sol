@@ -1,16 +1,84 @@
-"""Codex City: rotating attack, two-player counterpress in danger.
+"""Codex City: learned role selection over reliable SDK football skills.
 
-Across four losses, 20 of 28 concessions arrived while the nearest available
-Codex player was ordered to walk around a ball in our defensive third. Every
-one of our 12 goals came from active ``kick_toward`` pressure. The retreat
-kernel was solving an own goal whose actual cause was a since-fixed direction
-bug, while duplicating a correct-side orbit already guaranteed by the SDK.
+The deterministic phase controller conceded six to Fable despite executing
+its counterpress, crossing the abandonment threshold recorded before Round 6.
+Role choice is now a learned three-way policy (press, support, screen) trained
+on public trajectories from winning frozen clubs, augmented to reproduce the
+occlusion, stale-ball, and blocked states observed in Codex's private logs.
 
-Both players now counterpress whenever the ball enters the defensive danger
-zone. ``kick_toward`` tracks the live ball and approaches from the correct
-side; outside danger, the nearer player presses and the other stays a close,
-goal-side outlet.
+The execution layer remains deliberately small and audited: ``kick_toward``
+owns correct-side live-ball approaches, while support and screen roles produce
+reachable field targets. The network selects the role every decision.
 """
+
+import math
+
+
+# Frozen 19 -> 8 -> 3 tanh policy. It is inline because the league loads
+# team.py directly without adding the club directory to Python's import path.
+# tools/train_role_policy.py reproduces and verifies every rounded weight.
+PRESS = 0
+SUPPORT = 1
+SCREEN = 2
+ROLE_W1 = (
+    (0.766105, 0.438528, -0.228734, -0.498233, -0.376164, 0.505361,
+     0.428547, -0.015710, 0.408938, -0.115706, -0.467580, 0.034433,
+     -0.501928, 0.053472, -0.258904, -0.910876, 0.810940, -0.465615,
+     1.446903),
+    (-0.208422, 0.668576, 0.254619, -0.866906, 0.271071, 0.641032,
+     0.027616, -0.138196, 0.671660, 0.351754, 0.915453, 0.037784,
+     0.080755, -0.096600, 0.228674, 1.075612, -0.791238, 0.127634,
+     -1.413855),
+    (0.196856, 0.187043, 0.018706, 0.190139, 1.406281, -2.584687,
+     1.872587, 0.049123, 0.383263, 0.559479, -0.535397, 0.010108,
+     -0.192185, -0.125132, 0.293163, -0.647945, 0.503345, 0.067122,
+     0.899632),
+    (-1.220873, 0.195017, 0.085687, -0.632355, 0.043249, 0.364779,
+     -0.404120, 0.220500, -0.614774, 0.117502, -1.164171, 0.081894,
+     0.230258, 0.076910, -0.254747, -1.273623, 0.944957, -0.264999,
+     1.850064),
+    (-1.964539, 0.118013, 0.616832, -0.484255, 1.336585, -0.193914,
+     0.936533, 0.247598, 0.200773, 0.165571, -0.421635, 0.187032,
+     -0.202049, -0.072496, 0.222182, 0.330761, 0.074519, 0.437897,
+     0.074128),
+    (-2.051497, -0.001859, 0.035865, 0.036981, 0.624719, 0.201458,
+     0.028857, 0.183825, 1.095382, 0.301638, -0.302282, 0.234111,
+     0.156134, -0.136735, 0.082340, 0.054605, 0.075566, 0.278546,
+     0.144996),
+    (-0.154736, 0.084777, -0.033295, 0.350537, 1.821669, -3.019089,
+     -1.780495, -0.187892, -0.095256, 0.449824, 0.863977, -0.004203,
+     -0.038106, -0.043650, 0.153058, 0.841999, -0.996639, 0.102559,
+     -1.424242),
+    (-1.088025, 0.053853, -0.448734, 0.255654, -0.008518, -0.288657,
+     -0.543526, -0.044316, -0.416192, -0.410620, -0.759312, -0.376922,
+     -0.322809, 0.131117, 0.083748, -0.732916, 0.837689, -0.195019,
+     1.229356),
+)
+ROLE_B1 = (-0.573815, -0.271694, 0.099251, -0.621730, 0.078778, 0.058874,
+           -0.139696, -0.620014)
+ROLE_W2 = (
+    (-1.042923, 1.191421, -1.182023, -1.020388, -1.395160, -1.055383,
+     1.205464, 0.201844),
+    (1.392986, -0.760206, 1.500794, -2.089591, -0.208502, -1.371579,
+     -1.497535, -1.666352),
+    (-0.839541, -1.071077, 0.498232, 1.148463, 1.479652, 1.179788,
+     -0.832332, 1.522435),
+)
+ROLE_B2 = (-0.058487, 0.133805, -0.335801)
+
+
+def predict_role(features):
+    """Return PRESS, SUPPORT, or SCREEN for one observation feature vector."""
+    hidden = tuple(
+        math.tanh(bias + sum(weight * value
+                             for weight, value in zip(weights, features)))
+        for weights, bias in zip(ROLE_W1, ROLE_B1)
+    )
+    logits = tuple(
+        bias + sum(weight * value for weight, value in zip(weights, hidden))
+        for weights, bias in zip(ROLE_W2, ROLE_B2)
+    )
+    return max(range(3), key=lambda index: logits[index])
 
 
 PITCH_X = 7.0
@@ -36,7 +104,7 @@ class CodexPlayer:
     def __init__(self, index):
         self.index = index
         self.slot = index % 2
-        self.name = "codex-city-danger-counterpress"
+        self.name = "codex-city-learned-shape"
         self.begin_episode()
 
     def begin_episode(self, log_dir=None):
@@ -80,26 +148,57 @@ class CodexPlayer:
         return [attack_x, -GOAL_TARGET_Y if keeper_y >= 0.0
                 else GOAL_TARGET_Y]
 
-    def _is_primary(self, ball, teammates, progress):
-        """Rotate first pressure to the nearer visible player.
+    @staticmethod
+    def _policy_features(obs, ball, teammates, opponents, attack_sign):
+        """Build the same normalized, visibility-bounded vector used to train."""
+        bx, by = (float(value) for value in ball["field_xy"])
+        px, py = (float(value) for value in obs["self"]["field_xy"])
+        vx, vy = (float(value)
+                  for value in ball.get("velocity_mps", [0.0, 0.0]))
 
-        When the teammate is occluded, number 1 keeps the default claim while
-        number 2 may take over a nearby ball in our half. This avoids two blind
-        claims without leaving a defensive emergency unattended.
-        """
-        my_distance = float(ball.get("distance_m", 99.0))
         if teammates:
-            bx, by = ball["field_xy"]
-            mate_distance = min(
-                _distance(mate.get("field_xy", [99.0, 99.0]), [bx, by])
-                for mate in teammates
-            )
-            if my_distance + 0.3 < mate_distance:
-                return True
-            if mate_distance + 0.3 < my_distance:
-                return False
-            return self.slot == 0
-        return self.slot == 0 or (progress < -0.4 and my_distance < 2.6)
+            mate = min(teammates,
+                       key=lambda item: _distance(item["field_xy"], [bx, by]))
+            mx, my = (float(value) for value in mate["field_xy"])
+            mate_visible = 1.0
+            mate_x = attack_sign * (mx - bx) / 7.0
+            mate_y = (my - by) / 4.5
+            mate_distance = _distance([mx, my], [bx, by]) / 8.0
+        else:
+            mate_visible = mate_x = mate_y = mate_distance = 0.0
+
+        opponent_count = min(2, len(opponents))
+        opponent_distance = (
+            min(_distance(item["field_xy"], [bx, by])
+                for item in opponents) / 8.0
+            if opponents else 0.0
+        )
+        score = obs.get("score") or {}
+        score_diff = int(score.get("you", 0)) - int(score.get("them", 0))
+        fresh = 1.0 if ball.get("seen_now", True) else 0.0
+        age = _clamp(float(ball.get("age_s", 0.0)) / 5.0, 0.0, 1.5)
+        return (
+            attack_sign * bx / 7.0,
+            by / 4.5,
+            _clamp(attack_sign * vx / 2.0, -1.5, 1.5),
+            _clamp(vy / 2.0, -1.5, 1.5),
+            attack_sign * (px - bx) / 7.0,
+            (py - by) / 4.5,
+            _distance([px, py], [bx, by]) / 8.0,
+            mate_visible,
+            mate_x,
+            mate_y,
+            mate_distance,
+            opponent_count / 2.0,
+            opponent_distance,
+            _clamp(score_diff / 5.0, -2.0, 2.0),
+            _clamp(float(obs.get("time_remaining_s", 600.0)) / 600.0,
+                   0.0, 1.0),
+            fresh,
+            age,
+            1.0 if ball.get("against_wall") else 0.0,
+            1.0 if obs["self"].get("blocked") else 0.0,
+        )
 
     @staticmethod
     def _ball_future(ball):
@@ -221,6 +320,31 @@ class CodexPlayer:
              else "Rotating close and goal-side of first pressure."),
         )
 
+    def _screen(self, obs, ball, defend_x, attack_sign):
+        """Take the shortest direct line into the ball-goal channel."""
+        px, py = (float(value) for value in obs["self"]["field_xy"])
+        bx, by = self._ball_future(ball)
+        # Stay goal-side even when the ball is already inside the usual fixed
+        # screen point. Half the live ball depth puts the target between ball
+        # and goal; the cap keeps ordinary recovery direct and reachable.
+        ball_depth = attack_sign * (bx - defend_x)
+        screen_depth = _clamp(0.5 * ball_depth, 0.08, 0.72)
+        target = [
+            defend_x + attack_sign * screen_depth,
+            _clamp(by, -1.3, 1.3),
+        ]
+        if _distance([px, py], target) < 0.4:
+            return self._announce(
+                {"skill": "turn_to", "target": [bx, by]},
+                "policy_screen_set",
+                "Learned screen set; closing the ball-goal channel.",
+            )
+        return self._announce(
+            {"skill": "walk_to", "target": target},
+            "policy_screen",
+            "Learned screen; recovering the ball-goal channel.",
+        )
+
     def _lost_ball(self, obs, defend_x, attack_sign):
         px, py = (float(v) for v in obs["self"]["field_xy"])
         if self.slot == 0:
@@ -261,17 +385,15 @@ class CodexPlayer:
         leading = int(score.get("you", 0)) > int(score.get("them", 0))
         leading_late = leading and float(obs.get("time_remaining_s", 999.0)) <= 75.0
 
-        # No goalkeeper exists. In four losses, staged goal-side recovery was
-        # still walking at 20 of 28 concessions. The SDK already guarantees a
-        # live, correct-side orbit, so danger means immediate pressure from
-        # both players—even if the teammate is temporarily out of view.
         own_depth = attack_sign * (bx - defend_x)
-        if own_depth < OWN_DANGER_DEPTH:
+        features = self._policy_features(
+            obs, ball, teammates, opponents, attack_sign)
+        role = predict_role(features)
+        if role == PRESS:
             return self._press(obs, ball, opponents, attack_x, attack_sign,
-                               emergency=True)
-
-        if self._is_primary(ball, teammates, progress):
-            return self._press(obs, ball, opponents, attack_x, attack_sign)
+                               emergency=own_depth < OWN_DANGER_DEPTH)
+        if role == SCREEN:
+            return self._screen(obs, ball, defend_x, attack_sign)
         return self._support(obs, ball, attack_x, defend_x, attack_sign,
                              progress, leading_late)
 

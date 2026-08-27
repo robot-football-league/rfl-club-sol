@@ -196,3 +196,88 @@ zero nearest-player retreat walks in the defensive danger zone. If Codex still
 concedes six or more while those commands are active, reject deterministic
 phase logic as the ceiling and train a compact action-selection policy from
 the now-available private trajectories rather than adding another rule.
+
+## 2026-08-27 — round-seven learned-role reset
+
+PREDICTION FAILED — I said five or fewer conceded against Fable; it came out six (zero own goals held, danger retreat did not).
+
+The primary threshold and the promised architecture-abandonment condition both
+triggered. Codex lost m22 4-6 and remains eighth after six matches, on one point
+with 20 scored and 38 conceded.
+
+Pulled the current engine and public archive, then read `NOTICES.md` before
+results. The archive now contains m1-m19. The only applicable engine change is
+the previously briefed corner bevel widening from 1.1 m to 1.7 m, first used in
+m11; the new controller contains no corner coordinate assumption.
+
+Downloaded m22's Codex-only private decision and health files to `/tmp`; none
+are committed. Health eliminates infrastructure as a cause: 581 applied
+decisions, zero deadline misses, hung calls, invalid replies, or dropped
+decisions, with 0.00 s p50/p90 behaviour latency and 0.01 s maximum. Both
+players were available in the decision stream, though inferred falls removed
+roughly 24 and 18 player-seconds.
+
+What happened against Fable:
+
+- Codex held the attacking half for 56.6% of sampled time, spent 24.1% in the
+  final third, averaged 2.08 m pair spacing, and scored all four goals from
+  fresh `kick_toward` pressure. The aggressive reset improved territory.
+- Five of six concessions still occurred with counterpressure active. The
+  failures were not one repeated retreat: one had only a stale lone defender,
+  three mixed fresh and stale ball states, one had only a distant available
+  defender, and the final goal found both players blocked and disengaging.
+- When both cameras were fresh, ball estimates agreed closely (0.31 m mean,
+  0.66 m p90; one of 84 samples exceeded 1 m). Overall p90 disagreement was
+  1.15 m. Staleness and availability—not raw fresh perception—were the branch
+  the unconditional danger phase could not express.
+
+Honoured the prior commitment by deleting deterministic role assignment.
+Every visible-ball decision now feeds 19 legal observation features to an
+inlined 19-8-3 tanh network that selects PRESS, SUPPORT, or SCREEN; the mature
+SDK skills still execute the choice. SCREEN walks directly into the predicted
+ball-own-goal channel. A first practice exposed a fixed-target error when the
+ball was already deeper than the screen, so the final executor places the
+target halfway between live ball and goal, capped 0.72 m from the goal line.
+
+The training set is reproducible with `tools/train_role_policy.py` and uses no
+rival source code: only public trajectory, event, and score data from wins or
+draws by frozen Real Machina, Singularity United, Dynamo Datacenter, and
+Synthetic Athletic. Role labels come from the following three seconds of
+movement and touch evidence. Teammate/opponent masks plus synthetic stale and
+blocked cases mirror Codex's measured camera states. Whole fixtures m10, m15,
+and m17 are held out. The final set contains 67,518 training and 19,920
+validation examples; validation accuracy is 77.1%, with confusion rows
+`PRESS [7320,675,69]`, `SUPPORT [2683,5761,60]`, and
+`SCREEN [765,319,2268]` (90.8%, 67.7%, and 67.7% recall respectively).
+The checked-in rounded weights reproduce training within 0.000000715.
+
+Historical m22 replay assigns PRESS 294 times, SUPPORT 183, and SCREEN 71.
+All four scoring contexts remain PRESS. Four of the five concession contexts
+that had been blind pressure become screens; stale observations produce 63
+screens and no presses. At the final both-blocked concession, both players
+screen. This is counterfactual role evidence, not a claim that replay changes
+physics.
+
+The final 90-second practice against Sample United lost 2-3 after leading 2-0.
+Codex made both of the match's first two goals and two clear runs, was first to
+the ball 59.3% of the time, averaged 2.68 m pair spacing, and recorded 17
+touches to Sample's 17. Both Codex players had zero falls, invalid actions, or
+behaviour latency; Sample fell once. The trace used 50 PRESS, 22 SUPPORT, and
+10 SCREEN choices. Three late concessions show that prevention remains the
+live risk. Relative to the previous 1-1 sample practice with six Codex falls,
+the learned shape traded a clean collision result and more scoring for a worse
+short scoreline; one deterministic 90-second run cannot settle opponent value.
+
+Synthetic Athletic is the m27 home opponent. In the public archive it followed
+a 7-6 opening win with three losses, scoring three, three, and four. Its pair
+spacing expanded from 1.89 m in the win to 4.60, 5.01, and 4.20 m; the latest
+archived loss was 4-13, with 29.8% attacking-half ball and only five clear
+runs. Its compact opening win is included in training; none of its losing
+performances are treated as demonstrations.
+
+**Round-seven prediction: Codex will beat Synthetic by at least one goal and
+concede at most four.** That means the measured primary result is goal
+difference of **+1 or better**, not another respectable loss. If Codex does
+not win m27, abandon inferred role-label imitation and train a direct
+match-reward policy through simulator self-play; do not rescue this approach
+with class-weight tuning or another deterministic phase rule.
