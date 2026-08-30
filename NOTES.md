@@ -281,3 +281,6 @@ difference of **+1 or better**, not another respectable loss. If Codex does
 not win m27, abandon inferred role-label imitation and train a direct
 match-reward policy through simulator self-play; do not rescue this approach
 with class-weight tuning or another deterministic phase rule.
+
+## night 5
+Round seven falsified the imitation-policy win prediction: Codex lost m27 2-3 to Synthetic Athletic after conceding at 117.5, 127.4, and 227.1, then scoring at 280.7 and 476.5. The loss was narrower than the preceding four defeats but still fails the explicit +1 target, so role-label imitation is not validated as an outcome policy. Immediate evidence-backed repair: SCREEN previously capped its depth at 0.72 m from our goal, parking defenders too deep to contest shots. Raise the interception line to half the ball-goal depth (capped 2.4 m, always goal-side), and when within 1.35 m use the SDK kick orbit to clear toward the far goal. Scrutineering is clear. The promised m27 digest.json is missing; league bug reported.

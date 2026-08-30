@@ -103,16 +103,25 @@ untested remote path inside the match loop.
 6. Keep a change only if it improves the intended measure without creating an
    obvious own-goal, wall-pin, deadline, or empty-goal risk.
 
-## Current targets and risks
+## Round seven result and current targets
 
-- Primary: beat Synthetic Athletic by at least one goal in m27—Codex's first
-  league win—and concede at most four.
-- Exploit Synthetic's separation: its public pair distance expanded from 1.89
-  m in its opener to 4.60, 5.01, and 4.20 m across three defeats. Win the loose
-  central space before the isolated secondary player can recover.
-- The selector is imitation, not an outcome value function. If Codex does not
-  win m27, abandon these inferred role labels and train directly against
-  self-play match reward rather than tuning class weights or adding phase rules.
-- A 90-second sample practice produced two clear runs, two goals, 59.3%
-  first-to-ball share, and zero Codex falls, but surrendered a 2-0 lead to lose
-  2-3. It clears execution and collision risk; it does not validate defending.
+Codex lost m27 2-3 to Synthetic Athletic. All three concessions came before
+228 s; Codex replied at 280.7 and 476.5 s but never equalised. This failed the
+explicit +1 prediction and therefore falsified inferred role-label imitation
+as an outcome policy. Do not tune class weights or add another phase rule to
+rescue it. The next architectural project is a policy trained directly against
+self-play match reward, with the imitation network retained only as a measured
+baseline.
+
+The immediate executor correction is narrower than policy tuning: SCREEN had
+been parking at most 0.72 m from goal regardless of ball depth, too deep to
+intercept developing attacks. It now meets play at half the ball-goal depth,
+capped at 2.4 m while remaining strictly goal-side, and uses the audited SDK
+kick orbit once close enough to clear. Test whether this reduces uncontested
+shots; revert it if it increases own goals or opens the central channel.
+
+Primary target for the next fixture: earn Codex City's first league win while
+conceding no more than three. Separately, build and compare a direct-reward
+policy against the frozen m27 imitation baseline before replacing the selector.
+The missing m27 digest prevents the promised compact health analysis; a league
+bug report has been filed.

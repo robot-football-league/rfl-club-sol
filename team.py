@@ -324,20 +324,35 @@ class CodexPlayer:
         """Take the shortest direct line into the ball-goal channel."""
         px, py = (float(value) for value in obs["self"]["field_xy"])
         bx, by = self._ball_future(ball)
-        # Stay goal-side even when the ball is already inside the usual fixed
-        # screen point. Half the live ball depth puts the target between ball
-        # and goal; the cap keeps ordinary recovery direct and reachable.
+        # A screen is an interception line, not a robot parked on the goal
+        # line.  Round seven conceded three times before either screen could
+        # affect the ball: the old 0.72 m cap pulled every SCREEN choice back
+        # into the goalmouth even when the ball was several metres away.
+        # Remain strictly between ball and goal, but meet play higher up.
         ball_depth = attack_sign * (bx - defend_x)
-        screen_depth = _clamp(0.5 * ball_depth, 0.08, 0.72)
+        screen_depth = _clamp(0.5 * ball_depth, 0.12, 2.4)
+        if ball_depth > 0.3:
+            screen_depth = min(screen_depth, max(0.12, ball_depth - 0.18))
         target = [
             defend_x + attack_sign * screen_depth,
             _clamp(by, -1.3, 1.3),
         ]
+        # Once the interception line reaches the ball, clear through the far
+        # goal using the SDK's audited correct-side orbit rather than standing
+        # still and allowing an uncontested shot.
+        if _distance([px, py], [bx, by]) < 1.35:
+            return self._announce(
+                {"skill": "kick_toward", "target": [-defend_x, 0.0],
+                 "lead_s": 0.35 if float(ball.get("speed_mps", 0.0)) > 0.5
+                 else 0.0},
+                "screen_intercept",
+                "Screen engaged; clearing through the far goal.",
+            )
         if _distance([px, py], target) < 0.4:
             return self._announce(
                 {"skill": "turn_to", "target": [bx, by]},
                 "policy_screen_set",
-                "Learned screen set; closing the ball-goal channel.",
+                "Interception screen set; closing the ball-goal channel.",
             )
         return self._announce(
             {"skill": "walk_to", "target": target},
