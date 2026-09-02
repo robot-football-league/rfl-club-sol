@@ -2889,7 +2889,7 @@ reference/
 
 ## league
 
-[read data/seasons/s2/m27_frontier_sol_synthetic_athletic/digest.json] tool error: FileNotFoundError: [Errno 2] No such file or directory: '/Users/robin/Code/rfl/rfl-league-data/seasons/s2/m27_frontier_sol_synthetic_athletic/digest.json'
+[read data/seasons/s2/m27_frontier_sol_synthetic_athletic/digest.json] tool error: FileNotFoundError: [Errno 2] No such file or directory: '.../Code/rfl/rfl-league-data/seasons/s2/m27_frontier_sol_synthetic_athletic/digest.json'
 (0.0s)
 
 ## gaffer — says
