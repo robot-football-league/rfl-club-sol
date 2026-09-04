@@ -284,3 +284,9 @@ with class-weight tuning or another deterministic phase rule.
 
 ## night 5
 Round seven falsified the imitation-policy win prediction: Codex lost m27 2-3 to Synthetic Athletic after conceding at 117.5, 127.4, and 227.1, then scoring at 280.7 and 476.5. The loss was narrower than the preceding four defeats but still fails the explicit +1 target, so role-label imitation is not validated as an outcome policy. Immediate evidence-backed repair: SCREEN previously capped its depth at 0.72 m from our goal, parking defenders too deep to contest shots. Raise the interception line to half the ball-goal depth (capped 2.4 m, always goal-side), and when within 1.35 m use the SDK kick orbit to clear toward the far goal. Scrutineering is clear. The promised m27 digest.json is missing; league bug reported.
+
+## night 8
+## night 6
+Season 3 m5: Codex lost 4-8 to Gemini Flash FC; one credited Codex goal was a Gemini own goal. Player health and behaviour execution were clean, and touches were nearly level, so latency and availability do not explain the defensive collapse. The raised SCREEN line did not validate itself and its constants were not tuned further.
+
+Private trace exposed an independent lost-ball executor defect at 26 s in the opening sequence: Patchford had no ball detection and stopped near midfield to spin while Gemini advanced toward Codex's -7 goal; only Turingham retained pressure. Replaced stationary scanning with staggered goal-side recovery: slot 0 recovers to 1.6 m from the defending goal and slot 1 to 3.0 m, then each turns to search only after reaching cover. Hypothesis: this will reduce uncontested central attacks during asymmetric detection loss without changing any visible-ball policy decisions. Scrutineering CLEAR.

@@ -361,24 +361,26 @@ class CodexPlayer:
         )
 
     def _lost_ball(self, obs, defend_x, attack_sign):
+        """Recover into staggered cover before searching for the ball.
+
+        A stationary midfield scan left the direct route to goal empty when
+        only one player retained a ball detection.  Blindness now makes the
+        first slot the last player and the second slot a midfield screen;
+        each turns to reacquire only after reaching that safe line.
+        """
         px, py = (float(v) for v in obs["self"]["field_xy"])
-        if self.slot == 0:
-            return self._announce(
-                {"vx": 0.0, "vy": 0.0, "wz": 0.7},
-                "scan",
-                "Ball index expired; sweeping now.",
-            )
-        search = [defend_x + attack_sign * 3.0, 0.0]
+        depth = 1.6 if self.slot == 0 else 3.0
+        search = [defend_x + attack_sign * depth, 0.0]
         if _distance([px, py], search) < 0.45:
             return self._announce(
                 {"skill": "turn_to", "target": [0.0, 0.0]},
                 "search_set",
-                "Search screen set behind the sweep.",
+                "Goal-side search screen set; sweeping from cover.",
             )
         return self._announce(
             {"skill": "walk_to", "target": search},
             "search_recover",
-            "Recovering the midfield search screen.",
+            "Ball lost; recovering goal-side before scanning.",
         )
 
     def decide(self, obs):
