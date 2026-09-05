@@ -1,0 +1,18 @@
+{
+ "night": 8,
+ "model": "llm:aiml:openai/gpt-5.6-sol",
+ "finished_at": "2026-09-04T11:51:01+00:00",
+ "turns": 10,
+ "spent_usd": 1.376,
+ "practices": 0,
+ "reasoning_turns": 7,
+ "fabricated_chars": 0,
+ "reasoning_tokens": 494,
+ "reports": 0,
+ "wall_s": 52.5,
+ "timed_out": false,
+ "commit": "1938db9",
+ "summary": "Recover into staggered goal-side cover before scanning when ball detection is lost; documented season 3 m5 evidence and verified scrutineering CLEAR.",
+ "rendered_through": 6,
+ "season": 3
+}

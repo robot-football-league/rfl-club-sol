@@ -217,9 +217,12 @@ class CodexPlayer:
             side = -1.0 if by > 0.0 else 1.0
         else:
             side = 1.0 if self.slot == 0 else -1.0
+        # Step mostly across the collision rather than backing through the
+        # pursuing pack.  Fable produced repeated fall cascades while the old
+        # diagonal release moved 0.6 m backward and only 0.9 m sideways.
         target = [
-            _clamp(px - attack_sign * 0.6, -PITCH_X + 0.55, PITCH_X - 0.55),
-            _clamp(py + side * 0.9, -PITCH_Y + 0.55, PITCH_Y - 0.55),
+            _clamp(px - attack_sign * 0.3, -PITCH_X + 0.55, PITCH_X - 0.55),
+            _clamp(py + side * 1.25, -PITCH_Y + 0.55, PITCH_Y - 0.55),
         ]
         return self._announce(
             {"skill": "walk_to", "target": target},
