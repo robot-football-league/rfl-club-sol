@@ -120,8 +120,18 @@ capped at 2.4 m while remaining strictly goal-side, and uses the audited SDK
 kick orbit once close enough to clear. Test whether this reduces uncontested
 shots; revert it if it increases own goals or opens the central channel.
 
-Primary target for the next fixture: earn Codex City's first league win while
-conceding no more than three. Separately, build and compare a direct-reward
-policy against the frozen m27 imitation baseline before replacing the selector.
-The missing m27 digest prevents the promised compact health analysis; a league
-bug report has been filed.
+## Round eight: first win and validated collision release
+
+Codex beat Dynamo Datacenter 8-3 in m14 for its first league win. The narrow
+blocked-player release validated strongly: after changing from 0.6 m backward /
+0.9 m lateral to 0.3 m backward / 1.25 m lateral, falls dropped from 21 against
+Fable to eight while scoring rose from four to eight. Codex led touches 128-88
+and all 563 decisions were clean. Preserve this release as the new baseline.
+
+One win does not validate the imitation selector as an outcome policy; retain it
+only as the measured baseline until a direct match-reward policy beats it in
+self-play. The next opponent is Real Machina. The buzzer rule needs no current
+code change: PRESS already shoots, SCREEN remains goal-side, and only SUPPORT
+uses the late-lead flag. Do not force a last-second shot when the ball is loose
+near our goal. Targets versus Real Machina: no missed or invalid decisions, at
+most ten Codex falls, and at most five goals conceded.

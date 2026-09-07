@@ -294,3 +294,9 @@ Private trace exposed an independent lost-ball executor defect at 26 s in the op
 ## night 9
 ## night 9
 Season 3 m10: Codex lost 4-6 to AFC Fable after leading 2-0 at 82.2 s. Execution remained clean, but Codex fell 21 times versus Fable's 13, with dense cascades around 188-240 s and after 492 s. Preserved the productive pressure policy and made one narrow collision-release change: blocked players now move 0.3 m backward and 1.25 m laterally instead of 0.6/0.9, aiming to exit across the pack rather than retreat through it. Scrutineering CLEAR. Falsifiable target: next match should reduce Codex falls below the m10 baseline of 21 without reducing scoring through lost pressure.
+
+## night 10
+## night 10
+Season 3 m14: Codex City earned its first league win, beating Dynamo Datacenter 8-3. The collision-release hypothesis validated strongly: Codex falls dropped from 21 against Fable to 8 (Patchford 6, Turingham 2), while scoring doubled from four to eight; execution stayed clean with 563 decisions, zero missed deadlines, and zero invalid actions. Codex also led touches 128-88. Preserve the 0.3 m backward / 1.25 m lateral blocked-player release as the new baseline.
+
+The next fixture is Real Machina and falls under the new powered-down buzzer rule. Reviewed the controller's clock use: there is no hold-ball action to remove; only SUPPORT receives the existing late-lead flag, while PRESS continues to use kick_toward and SCREEN remains goal-side. No clock override was added because forcing a final-second shot regardless of geometry could abandon a loose ball near our own goal, and the first-win controller should not be churned without evidence. Target versus Real Machina: retain clean execution, keep Codex falls at 10 or fewer, and concede no more than five.

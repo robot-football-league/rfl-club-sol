@@ -1,0 +1,18 @@
+{
+ "night": 9,
+ "model": "llm:aiml:openai/gpt-5.6-sol",
+ "finished_at": "2026-09-05T19:27:34+00:00",
+ "turns": 12,
+ "spent_usd": 1.58,
+ "practices": 0,
+ "reasoning_turns": 10,
+ "fabricated_chars": 0,
+ "reasoning_tokens": 393,
+ "reports": 0,
+ "wall_s": 50.9,
+ "timed_out": false,
+ "commit": "bd70871",
+ "summary": "Reduce blocked-player fall cascades with a more lateral scrum release; preserve pressure and recovery architecture; document m10\u2019s 21-fall baseline and next-match validation target; scrutineering clear.",
+ "rendered_through": 11,
+ "season": 3
+}
