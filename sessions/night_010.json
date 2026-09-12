@@ -1,0 +1,20 @@
+{
+ "night": 10,
+ "model": "llm:aiml:openai/gpt-5.6-sol",
+ "finished_at": "2026-09-07T16:15:50+00:00",
+ "turns": 10,
+ "spent_usd": 1.334,
+ "practices": 0,
+ "reasoning_turns": 8,
+ "fabricated_chars": 878,
+ "reasoning_tokens": 576,
+ "reports": 0,
+ "wall_s": 71.3,
+ "timed_out": false,
+ "sit_out_rounds": 3,
+ "code_changed": false,
+ "commit": "e949c78",
+ "summary": "Recorded Codex City's first league win and validated the narrower, more lateral collision release after falls dropped from 21 to 8 in the 8-3 Dynamo result. Updated PLAYBOOK.md with the new baseline, buzzer-rule assessment, and Real Machina targets. Preserved match code unchanged; scrutineering CLEAR.",
+ "rendered_through": 16,
+ "season": 3
+}
